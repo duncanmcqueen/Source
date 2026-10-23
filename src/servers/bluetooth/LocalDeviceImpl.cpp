@@ -930,14 +930,13 @@ LocalDeviceImpl::CommandStatus(struct hci_ev_cmd_status* event,
 				event->status);
 
 			if (event->status != BT_OK) {
-				reply.AddInt8("status", event->status);
+				// No Remote Name Request Complete event follows. Remove the
+				// whole request, or it receives the event of a later request.
+				reply.AddUInt8("status", event->status);
 				request->SendReply(&reply);
-			}
-			// printf("Sending reply... %ld\n", status);
-			//  debug reply.PrintToStream();
-
-			ClearWantedEvent(request, HCI_EVENT_CMD_STATUS, opcodeExpected);
-
+				ClearWantedEvent(request);
+			} else
+				ClearWantedEvent(request, HCI_EVENT_CMD_STATUS, opcodeExpected);
 		}
 		break;
 		case PACK_OPCODE(OGF_LINK_CONTROL, OCF_CREATE_CONN):
